@@ -5,6 +5,9 @@
 #include <asio/system_timer.hpp>
 #include <chrono>
 #include <cstddef>
+#include <map>
+#include <utility>
+#include <vector>
 
 #define GUARDED_BY(x) THREAD_ANNOTATION_ATTRIBUTE__(guarded_by(x))
 
@@ -20,6 +23,9 @@ using TimePoint = std::chrono::steady_clock::time_point;
 using Timer = asio::steady_timer;
 using tcp = asio::ip::tcp;
 using Seconds = std::chrono::seconds;
+
+using DestChannelConfig =
+    std::map<Endpoint, std::vector<std::pair<int, Endpoint>>>;
 
 constexpr size_t kBufferSize = 4 * 1024;
 }  // namespace proxy
