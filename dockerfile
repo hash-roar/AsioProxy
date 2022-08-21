@@ -21,6 +21,7 @@ FROM ubuntu:latest
 copy --from=build /src/build/server /app/
 copy --from=build /src/proxy.conf /app/
 workdir /app/
-cmd ["./server","proxy.conf"]
+cmd ["proxy.conf"]
+entrypoint ["./server"]
 
 
