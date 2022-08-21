@@ -89,6 +89,9 @@ bool Config::parseConfigFile(std::string_view file_name) {
   // catch many throw here
   try {
     std::ifstream file{file_name.data()};
+    if (!file.is_open()) {
+      spdlog::error("can not open config file :{}", file_name.data());
+    }
     // parse content to array
     for (std::string line; std::getline(file, line);) {
       if (std::all_of(line.begin(), line.end(), isspace)) {
