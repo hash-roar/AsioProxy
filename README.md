@@ -4,7 +4,7 @@
 
 
 
-AsioProxy is a tcp proxy  built on asio(no boost);It is implemented with modern cpp(cpp17).with clear code structure and high performance;
+***AsioProxy is a tcp proxy  built on asio(no boost);It is implemented with modern cpp(cpp17).with clear code structure and high performance;***
 
 
 
@@ -26,6 +26,8 @@ AsioProxy is a tcp proxy  built on asio(no boost);It is implemented with modern 
 
 - docker support
 
+- gracefully start and close  / close inactive connection  / load balancer with configurable priority
+
 
 
 ## install
@@ -36,7 +38,18 @@ AsioProxy is a tcp proxy  built on asio(no boost);It is implemented with modern 
 
 ### docker (recommended)
 
+```bash
+docker build -t proxy_server .
+docker container run  -itd  --rm --name=proxy_server proxy_server:latest  
+```
 
+
+
+if docker compose available,you can do things  below
+
+```bash
+docker compose up -d
+```
 
 
 
@@ -55,4 +68,9 @@ cmake .. && make
 ```
 
 
+
+## todo
+
+- object pool. we can implement it as another level of indirection with a class connection  manager which  construct get a connection and destruct release a connection so we can manage the life time of abstract connection with smart pointer yet;
+- high water mark. to be cache line friendly ,we can use adjust buffer size for heavily burdened connection    
 
