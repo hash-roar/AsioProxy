@@ -1,6 +1,6 @@
 # AsioProxy
 
-![image-20220821115420115](D:\working\github\AsioProxy\static\cpp.png)
+![image-20220821115420115](.\static\cpp.png)
 
 
 
@@ -34,7 +34,9 @@ AsioProxy is a tcp proxy  built on asio(no boost);It is implemented with modern 
 
 
 
-### docker (recommend)
+### docker (recommended)
+
+
 
 
 
