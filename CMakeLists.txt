@@ -11,7 +11,7 @@ aux_source_directory(./proxy SRCS)
 add_library(proxy STATIC ${SRCS})
 target_include_directories(proxy PUBLIC ${PROJECT_SOURCE_DIR}/proxy)
 target_include_directories(proxy PUBLIC ${PROJECT_SOURCE_DIR}/include)
-
+target_link_libraries(proxy pthread)
 
 # add excutable server
 add_executable(server main.cc)
