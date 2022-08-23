@@ -6,6 +6,8 @@
 #include <chrono>
 #include <cstddef>
 #include <map>
+#include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -23,6 +25,13 @@ using TimePoint = std::chrono::steady_clock::time_point;
 using Timer = asio::steady_timer;
 using tcp = asio::ip::tcp;
 using Seconds = std::chrono::seconds;
+
+// a little ... here
+using std::map;
+using std::pair;
+using std::string;
+using std::tuple;
+using std::vector;
 
 using DestChannelConfig =
     std::map<Endpoint, std::vector<std::pair<int, Endpoint>>>;

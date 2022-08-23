@@ -20,29 +20,31 @@
 namespace proxy {
 
 ProxyServer::ProxyServer(io_context& io, Config config)
-    : io_(io), print_timer_(io), config_(config) {}
+    : config_(config), io_(io), print_timer_(io) {
+  load_balancer_ = std::make_unique<LoadBalancer>(config_.getProxyChannels());
+}
 
 void ProxyServer::start() {
   try {
     spdlog::info("server start");
-    channels_ = config_.getProxyChannels();
-
+    const auto& channels = config_.getProxyChannels();
     // TODO pre verification that listen_ports are valid
-    for (const auto& [listen, dest] : channels_) {
+    for (const auto& [listen, dests] : channels) {
       auto& acceptor = acceptors_.emplace_back(io_);
       acceptor.open(listen.protocol());
       acceptor.set_option(tcp::acceptor::reuse_address(true));
       acceptor.bind(listen);
       acceptor.listen();
     }
-    for (int i = 0; i < acceptors_.size(); ++i) {
-      doAccept(i);
+
+    for (auto& acceptor : acceptors_) {
+      doAccept(acceptor);
     }
     addPrint();
   } catch (std::exception& e) {
     spdlog::error("catch exception on proxy server start:{}", e.what());
   } catch (...) {
-    // bad error we can do nothing
+    // bad error, we can do nothing
     throw;
   }
 }
@@ -63,20 +65,24 @@ std::string ProxyServer::getServerInfo() {
   return buf;
 }
 
-void ProxyServer::doAccept(int i) {
-  acceptors_[i].async_accept([i, this](std::error_code ec, Socket socket) {
-    if (!acceptors_[i].is_open()) {
+void ProxyServer::doAccept(Acceptor& acceptor) {
+  acceptor.async_accept([&acceptor, this](std::error_code ec, Socket socket) {
+    if (!acceptor.is_open()) {
       return;
     }
     if (!ec) {
-      auto ptr = std::make_shared<ProxyConnection>(std::move(socket),
-                                                   channels_[i].second, *this);
+      const Endpoint* ep_ptr =
+          load_balancer_->getNext(acceptor.local_endpoint().port());
+      spdlog::trace("from local:{},choose:{}", acceptor.local_endpoint().port(),
+                    ep_ptr->port());
+      auto ptr =
+          std::make_shared<ProxyConnection>(std::move(socket), *ep_ptr, *this);
       ptr->start();
       addConnection(ptr);
     } else {
       spdlog::error("accept error--->{}", ec.message());
     }
-    doAccept(i);
+    doAccept(acceptor);
   });
 }
 

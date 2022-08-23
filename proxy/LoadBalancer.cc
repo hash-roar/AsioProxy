@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <iostream>
 #include <utility>
 #include <vector>
 
@@ -9,6 +10,7 @@
 #include "spdlog/spdlog.h"
 
 namespace proxy {
+
 LoadBalancer::LoadBalancer(const DestChannelConfig& config) {
   spdlog::debug("init load balancer now");
   assert(!config.empty());
@@ -23,14 +25,19 @@ LoadBalancer::LoadBalancer(const DestChannelConfig& config) {
           i++;
         });
 
-    dests_channels_.emplace(&local, ChannelInfo{std::move(dest_endpoints),
-                                                std::move(priority), 0, 0});
+    dests_channels_.emplace(
+        local.port(),
+        ChannelInfo{std::move(dest_endpoints), std::move(priority), 0, 0});
   }
+  auto& a = dests_channels_.at(8000);
+  std::cout << a.last_index << "\n";
 }
 
 // throw
-const Endpoint* LoadBalancer::getNext(Endpoint* local) {
-  auto& info = dests_channels_.at(local);
+const Endpoint* LoadBalancer::getNext(int port) {
+  auto& info = dests_channels_.at(8000);
+  assert(info.dest_endpoints.front()->port() != 0);
+  assert(info.dest_endpoints.size() == 3);
   assert(info.last_index < info.dest_endpoints.size());
   // 1 1 2 3 1
   // 0 0 0 2 0
@@ -38,9 +45,11 @@ const Endpoint* LoadBalancer::getNext(Endpoint* local) {
 
   if (info.accumulate == info.priority[info.last_index] - 1) {
     auto old_index = info.last_index;
-    info.last_index = (info.last_index+1) % info.dest_endpoints.size();
+    info.last_index = (info.last_index + 1) % info.dest_endpoints.size();
     info.accumulate = 0;
-    return info.dest_endpoints[old_index];
+    auto t = info.dest_endpoints[old_index];
+    std::cout << t->port() << "\n";
+    return t;
     // 0 2-1
   } else {
     info.accumulate++;

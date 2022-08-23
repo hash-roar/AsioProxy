@@ -6,11 +6,13 @@
 
 namespace proxy {
 
+// load balancer will be accessed concurrently
+// but we do not need lock for that there are no critical area
 class LoadBalancer {
  public:
   LoadBalancer(const DestChannelConfig&);
-  ~LoadBalancer();
-  const Endpoint* getNext(Endpoint* local);
+  ~LoadBalancer() = default;
+  const Endpoint* getNext(int listen);
 
  private:
   struct ChannelInfo {
@@ -20,6 +22,6 @@ class LoadBalancer {
     size_t accumulate{0};
     size_t last_index{0};
   };
-  std::map<const Endpoint*, ChannelInfo> dests_channels_{};
+  std::map<int, ChannelInfo> dests_channels_{};
 };
 }  // namespace proxy

@@ -8,12 +8,13 @@
 
 int main(int argc, const char** argv) {
   spdlog::set_level(spdlog::level::trace);
-  proxy::io_context io{4};
+  proxy::io_context io{1};
 
   // for resolve
   proxy::Config config{io};
   if (!config.parse(argc, argv)) {
     spdlog::error("parse config error");
+    return -1;
   }
   proxy::ProxyServer server{io, config};
   server.start();

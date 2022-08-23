@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "Config.h"
+#include "LoadBalancer.h"
 #include "ProxyConnection.h"
 #include "common.h"
 
@@ -25,7 +26,7 @@ class ProxyServer {
 
  public:
   ProxyServer(io_context& io, Config config);
-  ~ProxyServer() = default;
+  ~ProxyServer() { spdlog::info("server destroy here"); };
 
   void destroyConnection(std::shared_ptr<ProxyConnection>);
 
@@ -36,14 +37,13 @@ class ProxyServer {
   std::string getServerInfo();
 
  private:
-  void doAccept(int i);
+  void doAccept(Acceptor&);
   void addConnection(std::shared_ptr<ProxyConnection>);
   void addPrint();
 
   uint64_t transferred_bytes_{0};
   Timer print_timer_;
-
-  std::vector<Config::ProxyChannelConfig> channels_;
+  std::unique_ptr<LoadBalancer> load_balancer_{};
   Acceptors acceptors_{};
   Config config_;  // copy it intentionally
   std::mutex mutex_{};
