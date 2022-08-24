@@ -29,26 +29,18 @@ LoadBalancer::LoadBalancer(const DestChannelConfig& config) {
         local.port(),
         ChannelInfo{std::move(dest_endpoints), std::move(priority), 0, 0});
   }
-  auto& a = dests_channels_.at(8000);
-  std::cout << a.last_index << "\n";
 }
 
 // throw
 const Endpoint* LoadBalancer::getNext(int port) {
   auto& info = dests_channels_.at(8000);
-  assert(info.dest_endpoints.front()->port() != 0);
-  assert(info.dest_endpoints.size() == 3);
   assert(info.last_index < info.dest_endpoints.size());
-  // 1 1 2 3 1
-  // 0 0 0 2 0
-  // 0 1 2 3 4
 
   if (info.accumulate == info.priority[info.last_index] - 1) {
     auto old_index = info.last_index;
     info.last_index = (info.last_index + 1) % info.dest_endpoints.size();
     info.accumulate = 0;
     auto t = info.dest_endpoints[old_index];
-    std::cout << t->port() << "\n";
     return t;
     // 0 2-1
   } else {
