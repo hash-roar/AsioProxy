@@ -37,6 +37,7 @@ class ProxyServer {
   std::string getServerInfo();
 
  private:
+  void initSignal();
   void doAccept(Acceptor&);
   void addConnection(std::shared_ptr<ProxyConnection>);
   void addPrint();
@@ -46,6 +47,7 @@ class ProxyServer {
   std::unique_ptr<LoadBalancer> load_balancer_{};
   Acceptors acceptors_{};
   Config config_;  // copy it intentionally
+  SignalSet sigs_;
   std::mutex mutex_{};
   ConnectionPtrSet connections_{};
   io_context& io_;

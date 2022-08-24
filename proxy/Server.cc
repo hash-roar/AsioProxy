@@ -7,6 +7,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdio>
+#include <cstdlib>
 #include <exception>
 #include <iostream>
 #include <memory>
@@ -20,7 +21,7 @@
 namespace proxy {
 
 ProxyServer::ProxyServer(io_context& io, Config config)
-    : config_(config), io_(io), print_timer_(io) {
+    : config_(config), io_(io), print_timer_(io), sigs_(io) {
   load_balancer_ = std::make_unique<LoadBalancer>(config_.getProxyChannels());
 }
 
@@ -41,6 +42,7 @@ void ProxyServer::start() {
       doAccept(acceptor);
     }
     addPrint();
+    initSignal();
   } catch (std::exception& e) {
     spdlog::error("catch exception on proxy server start:{}", e.what());
   } catch (...) {
@@ -63,6 +65,33 @@ std::string ProxyServer::getServerInfo() {
   }
   // rvo here
   return buf;
+}
+
+void ProxyServer::initSignal() {
+  sigs_.add(SIGINT);
+  // sigs.add(SIGTERM);
+  sigs_.async_wait([this](std::error_code ec, int sig_num) {
+    spdlog::info("accept signal:{}, close server", sig_num);
+    // stop acceptor
+    std::for_each(acceptors_.begin(), acceptors_.end(), [](Acceptor& acceptor) {
+      spdlog::trace("close acceptor of:{}", acceptor.local_endpoint().port());
+      acceptor.close();
+    });
+
+    io_.stop();
+
+    // TODO do we really need this lock?
+    // std::exit(0);
+    // {
+    //   std::cout << "lock";
+    //   // std::lock_guard lock{mutex_};
+    //   for (auto& conn : connections_) {
+    //     conn->close();
+    //   }
+    //   std::cout << "unlock";
+    //   connections_.clear();
+    // }
+  });
 }
 
 void ProxyServer::doAccept(Acceptor& acceptor) {

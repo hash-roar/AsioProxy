@@ -1,6 +1,7 @@
 #pragma once
 // #include <asio.hpp>
 #include <asio/ip/tcp.hpp>
+#include <asio/signal_set.hpp>
 #include <asio/steady_timer.hpp>
 #include <asio/system_timer.hpp>
 #include <chrono>
@@ -25,6 +26,7 @@ using TimePoint = std::chrono::steady_clock::time_point;
 using Timer = asio::steady_timer;
 using tcp = asio::ip::tcp;
 using Seconds = std::chrono::seconds;
+using SignalSet = asio::signal_set;
 
 // a little ... here
 using std::map;

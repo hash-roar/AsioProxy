@@ -27,11 +27,11 @@ class ProxyConnection : public std::enable_shared_from_this<ProxyConnection> {
   uint64_t id() const { return conn_id_; }
   uint64_t transferred() const { return transferred_; }
 
+  void close();
  private:
   // void printError();  implement it in anonymous space
   void readClient();
   void readServer();
-  void close();
   void addTimer();
 
   Socket client_socket_;
