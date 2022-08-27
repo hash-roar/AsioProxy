@@ -150,7 +150,6 @@ bool Config::resolve() {
       config.emplace(Endpoint{tcp::v4(), listen_port}, std::move(dests));
     }
     cache_ = std::move(config);
-    print(cache_);
     return true;
   } catch (std::exception& e) {
     spdlog::error("catch exception on resolve:{}", e.what());
